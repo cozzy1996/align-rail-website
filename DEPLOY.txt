@@ -1,0 +1,20 @@
+ALIGN RAIL WEBSITE - PUTTING IT ONLINE (free, about 20 minutes)
+===============================================================
+Files: index.html (home page), demo.html (demo page), images/, favicon.png
+
+1. GitHub Desktop: File > New repository > "align-rail-website". Copy these files
+   into it, commit to main, Publish repository.
+2. render.com > New > Static Site > connect align-rail-website.
+     Build command:      echo done
+     Publish directory:  .
+   Create Static Site. Render gives you an address like align-rail-website.onrender.com
+3. Once you own alignrail.com.au: Render > your static site > Settings > Custom Domains >
+   add alignrail.com.au and www.alignrail.com.au. Render shows the DNS records to add at
+   your domain registrar. Render sets up https for you.
+
+The enquiry form opens the visitor's email program with their details filled in,
+addressed to admin@alignrail.com.au. When you want enquiries to arrive without that
+step, a form service (for example Formspree) can be added later.
+
+To change text: edit the designs on the canvas and ask Claude to re-export, or edit
+index.html directly.
