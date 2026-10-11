@@ -3940,6 +3940,15 @@ function drawTrack(it,on){
     }
   }
   if(!on)return;
+  /* reading spots with nothing read yet on this layer (marked out by the Map Builder, or added and left blank): open
+     dots, so the inspector can see where to measure */
+  if(L==='gauge'||L==='head'){
+    var want=L==='gauge'?['gauge']:HEAD_KEYS, ka=num(t.kmFrom), kb=num(t.kmTo);
+    if(ka!==null&&kb!==null&&ka!==kb) (t.readings||[]).forEach(function(r){ var k=num(r.km); if(k===null) return;
+      if(want.some(function(kk){ return num(r[kk])!==null; })) return;
+      var f=(k-ka)/(kb-ka); if(f<-0.001||f>1.001) return;
+      ticks.push({f:Math.max(0,Math.min(1,f)),km:r.km,open:true}); });
+  }
   if(GEN_PLAN&&GEN_PLAN.id===it.id) GEN_PLAN.plan.fr.forEach(function(f){
     var pt=pointAtDist(it.area,acc,total*Math.max(0,Math.min(1,f))), d='M '+pt.x+' '+pt.y+' l 0.01 0';
     svgAdd('path',{d:d,stroke:'#0F1418','stroke-linecap':'round',fill:'none'},'stroke-width:calc(11px / var(--s,1))');
@@ -3949,7 +3958,7 @@ function drawTrack(it,on){
   var lastLbl=null, roomPx=46/(s||1);
   ticks.slice().sort(function(a,b2){ return a.f-b2.f; }).forEach(function(k){
     var pt=pointAtDist(it.area,acc,total*k.f);
-    svgAdd('circle',{cx:pt.x,cy:pt.y,r:LBL*0.19,fill:'#0F1418',stroke:'#FFFFFF','stroke-width':LBL*0.07});
+    svgAdd('circle',{cx:pt.x,cy:pt.y,r:LBL*0.19,fill:k.open?'none':'#0F1418',stroke:'#FFFFFF','stroke-width':LBL*(k.open?0.09:0.07)});
     if(!k.km||(lastLbl&&Math.hypot(pt.x-lastLbl.x,pt.y-lastLbl.y)<roomPx))return;
     trackLabel(pt.x,pt.y-LBL*0.62,k.km,'#E6EDF3',0.42); lastLbl=pt;
   });
