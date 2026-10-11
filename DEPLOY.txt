@@ -20,6 +20,5 @@ step, a form service (for example Formspree) can be added later.
 To change text: edit the designs on the canvas and ask Claude to re-export, or edit
 index.html directly.
 
-The demo map (demo-map/) is a stretch of a working coal terminal's rail loop, shown with
-the operator's permission. It needs no server: everything loads from these files, and
-nothing a visitor changes is saved. To refresh it, replace the demo-map folder.
+The demo map (demo-map/) is a stretch of a working coal terminal's rail loop. It needs
+no server: everything loads from these files, and nothing a visitor changes is saved. To refresh it, replace the demo-map folder.
