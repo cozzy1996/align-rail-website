@@ -151,7 +151,8 @@ input:focus,textarea:focus{outline:none;border-color:rgba(255,176,32,.85);
 /* floating controls */
 .ctl{position:absolute;z-index:10;}
 #ctlTop{top:12px;right:12px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;
-  transition:transform .52s var(--spring);}
+  transition:transform .52s var(--spring);pointer-events:none;}
+#ctlTop > *{pointer-events:auto;}   /* the column is as wide as its widest button: the map stays clickable beside the narrow ones */
 #mapwrap.panelopen #ctlTop{transform:translateX(-360px);}
 #mapwrap.panelopen #mini{transform:translateX(-360px);}
 @media (max-width:820px){
@@ -1154,6 +1155,9 @@ var $=function(id){return document.getElementById(id);};
 /* Website demo (site-config.js sets demo: true): the markers come fresh from site-markers.js on every visit and
    nothing is kept, so storage is a scratch copy that lasts until the page is reloaded. Other maps use the browser's. */
 var DEMO=!!(window.SITE_CONFIG&&window.SITE_CONFIG.demo);
+/* site setting trackLines: 'selected' draws a track only while it is open (click it to show it, double-click it to close
+   it); without it every track is drawn all the time in the colours of the track switch */
+var TRACKS_ON_TAP=!!(window.SITE_CONFIG&&window.SITE_CONFIG.trackLines==='selected');
 var localStorage=DEMO?(function(){ var m={}; return {getItem:function(k){ return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null; },
   setItem:function(k,v){ m[k]=String(v); }, removeItem:function(k){ delete m[k]; }}; })()
   :(function(){ try{ return window.localStorage; }catch(e){ return null; } })();
@@ -1412,7 +1416,9 @@ function saveMarker(m){                    /* one marker changed */
   save();
 }
 function load(){
-  if(DEMO){ var S=window.SITE_MARKERS; items=JSON.parse(JSON.stringify(Array.isArray(S)?S:((S&&S.items)||[]))); demoDates(); }
+  if(DEMO){ var S=window.SITE_MARKERS; items=JSON.parse(JSON.stringify(Array.isArray(S)?S:((S&&S.items)||[]))); demoDates();
+    /* the demo's sample reports come in site-markers.js and go into the scratch storage, as if they had been uploaded */
+    var D=S&&S.docs; if(D) Object.keys(DOC_LS).forEach(function(k){ if(D[k]) localStorage.setItem(DOC_LS[k],JSON.stringify(D[k])); }); }
   else try{var r=localStorage.getItem(KEY);if(r)items=JSON.parse(r)||[];}catch(e){items=[];}
   items.forEach(function(i){ if(!i.type)i.type='general'; if(!i.status)i.status='ok'; });
   try{var sc=localStorage.getItem(SKEY);if(sc)pxPerM=parseFloat(sc)||null;}catch(e){}
@@ -1612,6 +1618,11 @@ function nearLine(p,pts,tol){
   for(var i=1;i<pts.length;i++) if(distToSeg(p,pts[i-1],pts[i])<=tol) return true;
   return false;
 }
+function lineDist(p,pts){
+  var d=Infinity;
+  for(var i=1;i<pts.length;i++) d=Math.min(d,distToSeg(p,pts[i-1],pts[i]));
+  return d;
+}
 function inPoly(p,poly){
   var inside=false;
   for(var i=0,j=poly.length-1;i<poly.length;j=i++){
@@ -1649,7 +1660,7 @@ function render(){
       if(!it.area||it.area.length<2)return;
       var on=it.id===selId;
 
-      if(it.type==='track'){ drawTrack(it,on); return; }
+      if(it.type==='track'){ if(TRACKS_ON_TAP&&!on) return; drawTrack(it,on); return; }
       if(isLine(it)){
         /* a dump station's line is only drawn while it is selected */
         if(!on)return;
@@ -2276,7 +2287,7 @@ function handleTap(e){
   if(now-lastTapAt<320&&dx*dx+dy*dy<32*32){
     clearTimeout(tapTimer); tapTimer=null; lastTapAt=0;
     if(mode==='draw'&&draft){ draft.pts.push(toStage(e.clientX,e.clientY)); render(); return; }
-    if(mode==='pan') zoomAtSmooth(e.clientX,e.clientY,TAP_ZOOM,340);
+    if(mode==='pan'&&!closeTrackAt(e.clientX,e.clientY)) zoomAtSmooth(e.clientX,e.clientY,TAP_ZOOM,340);
     return;
   }
   lastTapAt=now; lastTapX=e.clientX; lastTapY=e.clientY;
@@ -2301,13 +2312,17 @@ function tap(e){
     toast('Double-click along the map to drop points.');
     return;
   }
+  /* an outline (a turnout, a signal) wins over the lines running through it; between lines, the nearest one, since
+     parallel roads a few metres apart are all within reach when the map is zoomed out */
+  var tol=Math.max(railWidthPx()*1.6,14/s), near=null, nearD=Infinity;
   for(var i=items.length-1;i>=0;i--){
     var it=items[i];
     if(!it.area||!it.area.length)continue;
     if(isLine(it)){
-      if(it.area.length>1&&nearLine(p,it.area,Math.max(railWidthPx()*1.6,14/s))){select(it.id,false);return;}
+      if(it.area.length>1){ var d=lineDist(p,it.area); if(d<=tol&&d<nearD){ nearD=d; near=it; } }
     } else if(it.area.length>2&&inPoly(p,it.area)){select(it.id,false);return;}
   }
+  if(near){select(near.id,false);return;}
   selId=null;closePanel();render();
 }
 
@@ -2589,8 +2604,19 @@ map.addEventListener('dblclick',function(e){
     return;
   }
   if(mode!=='pan')return;
-  e.preventDefault(); zoomAtSmooth(e.clientX,e.clientY,2.4,480);
+  e.preventDefault();
+  if(closeTrackAt(e.clientX,e.clientY)) return;
+  zoomAtSmooth(e.clientX,e.clientY,2.4,480);
 });
+/* with trackLines 'selected', double-clicking the open track closes it, and it is hidden again */
+function closeTrackAt(cx,cy){
+  if(!TRACKS_ON_TAP||selId===null)return false;
+  var it=items.find(function(o){return o.id===selId;});
+  if(!it||it.type!=='track'||!it.area||it.area.length<2)return false;
+  if(!nearLine(toStage(cx,cy),it.area,Math.max(railWidthPx()*1.6,14/s)))return false;
+  selId=null; render(); closePanel();
+  return true;
+}
 
 $('sortBy').addEventListener('change',function(){sortBy=this.value;renderList();});
 $('search').addEventListener('input',renderList);
@@ -6804,14 +6830,14 @@ function bvOpen(){
 /* fly to an indication on whichever traced track covers that chainage */
 function bvShow(a,b2){
   var lo=Math.min(a,b2), hi=Math.max(a,b2);
-  var hit=null;
-  items.forEach(function(it){
-    if(hit||!isLine(it)||!it.area||it.area.length<2)return;
+  var lines=items.filter(function(it){
+    if(!isLine(it)||!it.area||it.area.length<2)return false;
     var t=normTrack(it), f=parseFloat(t.kmFrom), to=parseFloat(t.kmTo);
-    if(isNaN(f)||isNaN(to))return;
-    var l=Math.min(f,to), h=Math.max(f,to);
-    if(hi>=l&&lo<=h)hit=it;
+    if(isNaN(f)||isNaN(to))return false;
+    return hi>=Math.min(f,to)&&lo<=Math.max(f,to);
   });
+  /* parallel roads share chainages: the track the report names comes first */
+  var hit=lines.find(function(it){ return it.type==='track'&&utForTrack(it).spans.some(function(sp){ return Math.max(sp.a,sp.b)>=lo&&Math.min(sp.a,sp.b)<=hi; }); })||lines[0]||null;
   if(!hit){toast('Trace a track covering '+lo.toFixed(3)+' km, then try again.');return;}
   $('bv').style.display='none';
   setTrackLayer('ut',true);
@@ -7233,8 +7259,10 @@ function demoPhotos(){
     var mw=$('mapwrap'); if(mw&&window.MutationObserver) new MutationObserver(refit).observe(mw,{attributes:true,attributeFilter:['class']});
     window.addEventListener('resize',refit); }
   toast('Demo map: try anything you like. Changes aren’t saved.',4200);
-  /* this stretch has no geometry or ultrasonic report, so their buttons would only open empty pages */
-  ['btnLyco','btnBV'].forEach(function(id){ var b=$(id); if(b) b.style.display='none'; });
+  /* the report buttons open the demo's sample reports; without one, its button would only open an empty page */
+  var D=(window.SITE_MARKERS&&window.SITE_MARKERS.docs)||{};
+  [['btnLyco','lyco'],['btnBV','bv']].forEach(function(x){ var b=$(x[0]); if(b&&!D[x[1]]) b.style.display='none'; });
+  var rb=$('bvReset'); if(rb) rb.style.display='none';   /* there is no built-in report to go back to in the demo */
   /* on a phone the overview would sit over the yard, which is along the bottom of the stretch */
   if(isPhone()){ miniOn=false; var mn=$('mini'); if(mn) mn.style.display='none'; }
 }

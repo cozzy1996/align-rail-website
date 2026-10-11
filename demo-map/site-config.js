@@ -10,6 +10,7 @@ window.SITE_CONFIG = {
     "A4": 60
   },
   "demo": true,
+  "trackLines": "selected",
   "focusX": 3756,
   "datesAsOf": "2026-10-11"
 };
