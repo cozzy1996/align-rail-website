@@ -1,0 +1,39 @@
+{
+  "name": "Align Rail Field (demo)",
+  "short_name": "Align Rail Field",
+  "description": "Demo of the Align Rail field app: turnout inspections, track readings and photos, straight onto the map.",
+  "id": "arm-field-demo",
+  "start_url": "index.html?field=1",
+  "scope": ".",
+  "lang": "en-AU",
+  "dir": "ltr",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F1418",
+  "theme_color": "#0F1418",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

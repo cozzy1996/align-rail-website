@@ -1,6 +1,7 @@
 ALIGN RAIL WEBSITE - PUTTING IT ONLINE (free, about 20 minutes)
 ===============================================================
-Files: index.html (home page), demo.html (demo page), images/, favicon.png
+Files: index.html (home page), demo.html (demo page), demo-map/ (the live demo map,
+       served at alignrail.com.au/demo-map), images/, favicon.png
 
 1. GitHub Desktop: File > New repository > "align-rail-website". Copy these files
    into it, commit to main, Publish repository.
@@ -18,3 +19,7 @@ step, a form service (for example Formspree) can be added later.
 
 To change text: edit the designs on the canvas and ask Claude to re-export, or edit
 index.html directly.
+
+The demo map (demo-map/) is a stretch of a working coal terminal's rail loop, shown with
+the operator's permission. It needs no server: everything loads from these files, and
+nothing a visitor changes is saved. To refresh it, replace the demo-map folder.
