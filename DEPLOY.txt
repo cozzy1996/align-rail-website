@@ -20,5 +20,10 @@ step, a form service (for example Formspree) can be added later.
 To change text: edit the designs on the canvas and ask Claude to re-export, or edit
 index.html directly.
 
+Visitor numbers: Cloudflare Web Analytics (Cloudflare dashboard > Web Analytics). The
+line marked "Cloudflare Web Analytics" just before </body> in index.html, demo.html and
+demo-map/index.html counts each visit; if a page is replaced or re-exported, put that
+line back. It sets no cookies, so the site needs no cookie banner.
+
 The demo map (demo-map/) is a stretch of a working coal terminal's rail loop. It needs
 no server: everything loads from these files, and nothing a visitor changes is saved. To refresh it, replace the demo-map folder.
