@@ -7398,7 +7398,7 @@ window.__arm={get items(){return items;}, get selId(){return selId;}, normTrack:
     return;
   }
   M=TILE_META;NW=M.nativeWidth;NH=M.nativeHeight;TS=M.tileSize;MAXL=M.maxLevel;
-  if(M.attribution&&!document.getElementById('imgCredit')){var cr=document.createElement('div');cr.id='imgCredit';cr.textContent=M.attribution;cr.style.cssText='position:fixed;left:8px;bottom:6px;z-index:6;font:11px/1.4 system-ui,sans-serif;color:#E6EDF3;background:rgba(15,20,24,.62);padding:2px 7px;border-radius:4px;pointer-events:none;max-width:70vw';document.body.appendChild(cr);}
+  if(M.attribution&&!document.getElementById('imgCredit')){var cr=document.createElement('div');cr.id='imgCredit';cr.textContent=M.attribution;cr.style.cssText='position:absolute;left:8px;bottom:6px;z-index:6;font:11px/1.4 system-ui,sans-serif;color:#E6EDF3;background:rgba(15,20,24,.62);padding:2px 7px;border-radius:4px;pointer-events:none;max-width:70%';($('mapwrap')||document.body).appendChild(cr);}
   if(window.innerWidth<=820){ $('rail').classList.add('hidden'); $('btnRail').title='Show list'; }
   load();bvLoad();refsLoad();docLocalLoad();
   fit();buildBase();buildMini();
