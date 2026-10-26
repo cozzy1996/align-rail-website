@@ -2,6 +2,9 @@ ALIGN RAIL WEBSITE - PUTTING IT ONLINE (free, about 20 minutes)
 ===============================================================
 Files: index.html (home page), demo.html (demo page), demo-map/ (the live demo map,
        served at alignrail.com.au/demo-map), images/, favicon.png
+       Service pages: rail-siding-inspections.html, turnout-inspections.html,
+       rail-inspection-maps.html
+       For search engines: robots.txt and sitemap.xml
 
 1. GitHub Desktop: File > New repository > "align-rail-website". Copy these files
    into it, commit to main, Publish repository.
@@ -21,9 +24,15 @@ To change text: edit the designs on the canvas and ask Claude to re-export, or e
 index.html directly.
 
 Visitor numbers: Cloudflare Web Analytics (Cloudflare dashboard > Web Analytics). The
-line marked "Cloudflare Web Analytics" just before </body> in index.html, demo.html and
-demo-map/index.html counts each visit; if a page is replaced or re-exported, put that
-line back. It sets no cookies, so the site needs no cookie banner.
+line marked "Cloudflare Web Analytics" just before </body> in every page (index.html,
+demo.html, the three service pages and demo-map/index.html) counts each visit; if a page
+is replaced or re-exported, put that line back. It sets no cookies, so the site needs no
+cookie banner.
+
+Google: sitemap.xml lists the pages for search engines, so if you add or rename a page,
+add its address there too. The business details Google reads (name, logo, phone, area
+served) are in the block marked application/ld+json near the top of index.html; keep
+them the same as your Google Business Profile.
 
 The demo map (demo-map/) is a stretch of a working coal terminal's rail loop. It needs
 no server: everything loads from these files, and nothing a visitor changes is saved. To refresh it, replace the demo-map folder.
